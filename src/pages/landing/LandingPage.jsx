@@ -90,7 +90,7 @@ const LandingPage = () => {
             <div className="absolute inset-0 bg-electric/20 rounded-[3rem] blur-3xl scale-90 group-hover:scale-110 transition-transform duration-1000"></div>
             <div className="relative bg-navy-800 border border-white/10 p-4 rounded-[3rem] shadow-2xl backdrop-blur-3xl overflow-hidden">
                <img 
-                 src="/Users/shravani/.gemini/antigravity/brain/cea2d54f-8bae-4eb7-ad95-2eb15983e988/fintech_hero_dashboard_1775998971270.png" 
+                 src="/images/vaultsight_dashboard_mockup.png" 
                  alt="VaultSight AI Dashboard"
                  className="rounded-[2.5rem] w-full object-cover shadow-inner hover:scale-[1.02] transition-transform duration-700"
                />
