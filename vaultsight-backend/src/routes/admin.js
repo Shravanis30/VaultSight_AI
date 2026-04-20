@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { getAllUsers, registerUser, getStats, unlockUser, lockUser, getAllTransactions, getLoginLogs, updateTransactionStatus } = require('../controllers/adminController');
+const { getAllUsers, registerUser, getStats, unlockUser, lockUser, getAllTransactions, getLoginLogs, updateTransactionStatus, issueCard } = require('../controllers/adminController');
 const { body } = require('express-validator');
 const { verifyToken, verifyAdmin, verifySOC } = require('../middleware/auth');
 const { validate } = require('../middleware/validate');
@@ -26,6 +26,7 @@ const registrationValidation = [
 
 router.post('/register', verifyAdmin, registrationValidation, registerUser); 
 router.post('/unlock/:userId', unlockUser);
+router.post('/issue-card/:userId', issueCard);
 
 module.exports = router;
 

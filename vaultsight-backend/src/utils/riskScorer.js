@@ -5,45 +5,54 @@ const calculateRiskScore = (transactionData, lastTransaction, userStats) => {
   let score = 0;
   const flags = [];
 
-  const { amount, isNewDevice, isNewLocation, timestamp } = transactionData;
+  const { amount, isNewDevice, isNewLocation, timestamp, isNewBeneficiary, isWrongPin } = transactionData;
   const hour = new Date(timestamp).getHours();
 
   // 1. Amount thresholds
   if (amount > 100000) {
-    score = 35; // Cap for amount part, or use higher weighted logic
+    score += 35;
     flags.push('HIGH_AMOUNT');
   } else if (amount > 50000) {
-    score = 20;
+    score += 20;
     flags.push('MEDIUM_AMOUNT');
   }
 
-  // 2. Beneficiary logic (simulated for simplicity)
-  // In real case, check if receiverId is in user's past transactions
-  if (transactionData.isNewBeneficiary) {
-    score += 20;
+  // 2. Beneficiary logic - Points should NOT mark if sending to new user
+  if (isNewBeneficiary) {
     flags.push('NEW_BENEFICIARY');
+    // No points added for new beneficiary as per request
   }
 
-  // 3. Device anomaly
+  // 3. PIN Anomaly - MARK and FLAG if wrong
+  if (isWrongPin) {
+    score += 50; // Increased to ensure it triggers flag/lock
+    flags.push('WRONG_MPIN');
+  }
+
+  // 4. Device anomaly - MARK and FLAG
   if (isNewDevice) {
     score += 15;
     flags.push('NEW_DEVICE');
   }
 
-  // 4. Location anomaly
+  // 5. Location anomaly - MARK and FLAG
   if (isNewLocation) {
     score += 20;
     flags.push('NEW_LOCATION');
   }
 
-  // 5. Unusual hour (11pm - 5am IST is roughly hour 23 to 5)
-  if (hour >= 23 || hour <= 5) {
-    score += 10;
-    flags.push('UNUSUAL_TIME');
+  // 6. Night Transfer logic: don't mark MORE if other flags exist
+  const isNight = hour >= 23 || hour <= 5;
+  if (isNight) {
+    flags.push('NIGHT_TRANSFER');
+    // only add points if no other security flags (device/location/pin/amount) are present
+    if (flags.length === 1 && flags[0] === 'NIGHT_TRANSFER') {
+      score += 10;
+    }
   }
 
-  // 6. Existing threats
-  if (userStats.hasHighThreats) {
+  // 7. Existing threats
+  if (userStats && userStats.hasHighThreats) {
     score += 10;
     flags.push('EXISTING_THREATS');
   }

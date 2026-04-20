@@ -76,39 +76,43 @@ const TransactionLogs = () => {
           <p className="text-slate-500 text-sm">Real-time monitoring of all banking transactions across the network.</p>
         </div>
 
-        <div className="flex items-center justify-between gap-4">
-           <div className="flex bg-white p-1 rounded-xl border border-slate-200 shadow-sm">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+           <div className="flex flex-wrap bg-white p-1.5 rounded-lg border border-slate-200 shadow-sm">
              {['All', 'LOW', 'MEDIUM', 'HIGH'].map(f => (
                <button 
                  key={f}
                  onClick={() => setFilter(f)}
-                 className={`px-6 py-2 rounded-lg text-sm font-bold transition-all ${filter === f ? 'bg-navy-900 text-white shadow-md' : 'text-slate-500 hover:bg-slate-50'}`}
+                 className={`px-8 py-3 rounded-lg text-xs font-black uppercase tracking-widest transition-all ${filter === f ? 'bg-navy-900 text-white shadow-xl shadow-navy-900/20 translate-y-[-2px]' : 'text-slate-500 hover:bg-slate-50'}`}
                >
-                 {f === 'All' ? 'All Transactions' : `${f} Risk`}
+                 {f === 'All' ? 'Global Feed' : `${f} Risk Matrix`}
                </button>
              ))}
            </div>
            
-           <div className="flex items-center gap-3">
-             <div className="bg-white border border-slate-200 px-4 py-2 rounded-xl text-sm font-semibold flex items-center gap-2 cursor-pointer hover:bg-slate-50 transition-all shadow-sm" onClick={() => fetchLogs()}>
-                <Filter size={16} /> Refresh Feed
-             </div>
+           <div className="flex items-center gap-3 w-full lg:w-auto">
+             <button 
+              onClick={() => fetchLogs()} 
+              className="flex-1 lg:flex-none bg-white border border-slate-200 px-6 py-3.5 rounded-lg text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-3 cursor-pointer hover:bg-slate-50 transition-all shadow-sm active:scale-95 italic"
+             >
+                <Filter size={14} className="text-electric" /> Update Intelligence Feed
+             </button>
            </div>
         </div>
 
-        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-          <table className="w-full">
-             <thead className="bg-slate-50 text-slate-500 text-[10px] uppercase font-bold tracking-widest border-b border-slate-200">
-                <tr>
-                   <th className="px-6 py-4 text-left">Transaction ID</th>
-                   <th className="px-6 py-4 text-left">Sender UPI</th>
-                   <th className="px-12 py-4 text-left">Amount</th>
-                   <th className="px-6 py-4 text-left">Location / Device</th>
-                   <th className="px-6 py-4 text-left">Risk Level</th>
-                   <th className="px-6 py-4 text-left">Status</th>
-                   <th className="px-6 py-4"></th>
-                </tr>
-             </thead>
+        <div className="bg-white rounded-lg border border-slate-200 shadow-sm overflow-hidden min-h-[600px]">
+          <div className="overflow-x-auto custom-scrollbar">
+            <table className="w-full min-w-[1100px]">
+               <thead className="bg-slate-50 text-slate-400 text-[10px] uppercase font-black tracking-[0.3em] border-b border-slate-200">
+                  <tr>
+                     <th className="px-10 py-6 text-left italic">Transaction Vector</th>
+                     <th className="px-10 py-6 text-left italic">Sender/Recipient Pulse</th>
+                     <th className="px-10 py-6 text-left italic">Financial Payload</th>
+                     <th className="px-10 py-6 text-left italic">Gateway/Identity</th>
+                     <th className="px-10 py-6 text-left italic">Neural Risk</th>
+                     <th className="px-10 py-6 text-left italic">Status</th>
+                     <th className="px-10 py-6"></th>
+                  </tr>
+               </thead>
              <tbody className="divide-y divide-slate-100">
                 {filteredTransactions.length > 0 ? filteredTransactions.map((txn) => (
                   <React.Fragment key={txn._id}>
@@ -167,7 +171,7 @@ const TransactionLogs = () => {
                              <div className="space-y-4 flex-1">
                                <h4 className="text-xs font-bold text-slate-400 uppercase tracking-widest">Transaction Intelligence</h4>
                                <div className="grid grid-cols-2 gap-4">
-                                  <div className="bg-white p-3 rounded-xl border border-slate-200">
+                                  <div className="bg-white p-3 rounded-lg border border-slate-200">
                                      <p className="text-[10px] font-bold text-slate-400 uppercase mb-1">Risk Score</p>
                                      <div className="flex items-end gap-2">
                                         <p className="text-2xl font-black text-slate-900">{txn.riskScore}</p>
@@ -176,13 +180,13 @@ const TransactionLogs = () => {
                                         </div>
                                      </div>
                                   </div>
-                                  <div className="bg-white p-3 rounded-xl border border-slate-200">
+                                  <div className="bg-white p-3 rounded-lg border border-slate-200">
                                      <p className="text-[10px] font-bold text-slate-400 uppercase mb-1">Device IP / Fingerprint</p>
                                      <p className="text-xs font-mono text-slate-600 truncate">{txn.ipAddress || '192.168.1.xxx'}</p>
                                   </div>
                                </div>
                                {txn.riskFlags?.length > 0 && (
-                                 <div className="bg-danger/5 border border-danger/20 p-4 rounded-xl flex gap-3">
+                                 <div className="bg-danger/5 border border-danger/20 p-4 rounded-lg flex gap-3">
                                     <AlertCircle className="text-danger shrink-0" size={18} />
                                     <div>
                                       <p className="text-xs font-bold text-danger uppercase tracking-tight">Threat Signature Detected</p>
@@ -228,6 +232,7 @@ const TransactionLogs = () => {
              </tbody>
           </table>
         </div>
+      </div>
     </div>
   );
 };

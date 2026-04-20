@@ -17,13 +17,14 @@ const getAllUsers = async (req, res, next) => {
 
 const registerUser = async (req, res, next) => {
   try {
-    const { name, mobile, address, balance, customPassword } = req.body;
+    const { name, mobile, address, balance, customPassword, upiPin: providedUpiPin } = req.body;
     
     // Auto-generate
     const accountNumber = 'VS' + Math.floor(Math.random() * 9000000000 + 1000000000);
     const upiId = name.toLowerCase().replace(' ', '') + '@vaultsight';
     const username = name.split(' ')[0].toLowerCase() + Math.floor(Math.random() * 9000 + 1000);
     const password = customPassword || Math.random().toString(36).slice(-8); 
+    const upiPin = providedUpiPin || Math.floor(100000 + Math.random() * 900000).toString();
     
     // Debit card
     const cardNumber = Math.floor(Math.random() * 9000000000000000 + 1000000000000000).toString();
@@ -32,7 +33,7 @@ const registerUser = async (req, res, next) => {
     const cvv = Math.floor(Math.random() * 900 + 100).toString();
 
     const newUser = new User({
-      name, mobile, address, accountNumber, upiId, username, password,
+      name, mobile, address, accountNumber, upiId, username, password, upiPin,
       balance: balance || Math.floor(Math.random() * 490000 + 10000),
       debitCard: { cardNumber, expiryMonth, expiryYear, cvv }
     });
@@ -44,7 +45,7 @@ const registerUser = async (req, res, next) => {
       message: 'User registered successfully',
       data: {
         ...newUser.toSafeObject(),
-        generatedCredentials: { username, password }
+        generatedCredentials: { username, password, upiPin }
       }
     });
   } catch (error) {
@@ -167,4 +168,41 @@ const updateTransactionStatus = async (req, res, next) => {
   }
 };
 
-module.exports = { getAllUsers, registerUser, getStats, unlockUser, lockUser, getAllTransactions, getLoginLogs, updateTransactionStatus };
+const issueCard = async (req, res, next) => {
+  try {
+    const { userId } = req.params;
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ success: false, error: 'User not found' });
+    }
+    if (!user.debitCard || !user.debitCard.cardNumber) {
+      const cardNumber = Math.floor(Math.random() * 9000000000000000 + 1000000000000000).toString();
+      const expiryMonth = Math.floor(Math.random() * 12) + 1;
+      const expiryYear = 2029;
+      const cvv = Math.floor(Math.random() * 900 + 100).toString();
+      const cardPin = Math.floor(1000 + Math.random() * 9000).toString();
+      
+      user.debitCard = {
+        cardNumber,
+        expiryMonth,
+        expiryYear,
+        cvv,
+        cardPin,
+        isIssued: true
+      };
+    } else {
+      user.debitCard.isIssued = true;
+      if (!user.debitCard.cardPin) {
+        user.debitCard.cardPin = Math.floor(1000 + Math.random() * 9000).toString();
+      }
+    }
+
+    await user.save();
+
+    res.status(200).json({ success: true, message: 'Debit card issued successfully', data: user.toSafeObject() });
+  } catch (error) {
+    next(error);
+  }
+};
+
+module.exports = { getAllUsers, registerUser, getStats, unlockUser, lockUser, getAllTransactions, getLoginLogs, updateTransactionStatus, issueCard };

@@ -43,7 +43,7 @@ const UserLogin = () => {
 
   return (
     <div className="flex flex-col items-center justify-center min-h-[800px] w-full max-w-xl mx-auto">
-      <div className="w-full bg-white/70 backdrop-blur-3xl rounded-[4rem] border border-white/50 shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-700">
+      <div className="w-full bg-white/70 backdrop-blur-3xl rounded-lg border border-white/50 shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-700">
         
         {/* Role Selector Tabs */}
         <div className="flex p-2 bg-slate-100/50 border-b border-slate-200">
@@ -55,7 +55,7 @@ const UserLogin = () => {
              <button
                key={tab.id}
                onClick={() => setLoginType(tab.id)}
-               className={`flex-1 flex items-center justify-center gap-2 py-4 rounded-3xl text-[10px] font-black uppercase tracking-widest transition-all ${
+               className={`flex-1 flex items-center justify-center gap-2 py-4 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${
                  loginType === tab.id ? 'bg-white text-navy-900 shadow-xl' : 'text-slate-400 hover:text-slate-600'
                }`}
              >
@@ -66,7 +66,7 @@ const UserLogin = () => {
         </div>
 
         <div className="p-12 text-center">
-          <div className={`inline-block p-6 rounded-[2.5rem] bg-navy-900 shadow-2xl mb-8 border-[6px] border-white group relative transition-all duration-500 ${getThematicColor().split(' ')[1]}`}>
+          <div className={`inline-block p-6 rounded-lg bg-navy-900 shadow-2xl mb-8 border-[6px] border-white group relative transition-all duration-500 ${getThematicColor().split(' ')[1]}`}>
             <Shield size={64} className={`relative z-10 transition-colors duration-500 ${getThematicColor().split(' ')[0]}`} />
           </div>
           
@@ -78,7 +78,7 @@ const UserLogin = () => {
           </p>
 
           {error && (
-            <div className="p-5 mb-8 bg-danger/5 border border-danger/10 rounded-2xl text-danger text-[10px] font-black flex items-center justify-center gap-3 animate-shake uppercase tracking-widest">
+            <div className="p-5 mb-8 bg-danger/5 border border-danger/10 rounded-lg text-danger text-[10px] font-black flex items-center justify-center gap-3 animate-shake uppercase tracking-widest">
               <ShieldAlert size={20} />
               {error}
             </div>
@@ -92,7 +92,7 @@ const UserLogin = () => {
               <input 
                 type="text" 
                 placeholder={loginType === 'customer' ? "USER HANDLE" : "IDENTITY TOKEN"}
-                className="w-full pl-16 pr-8 py-5 bg-slate-50 rounded-[2rem] border border-slate-200 focus:border-electric focus:bg-white focus:ring-8 focus:ring-electric/5 outline-none transition-all font-black italic text-sm tracking-tight"
+                className="w-full pl-16 pr-8 py-5 bg-slate-50 rounded-lg border border-slate-200 focus:border-electric focus:bg-white focus:ring-8 focus:ring-electric/5 outline-none transition-all font-black italic text-sm tracking-tight"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 disabled={isSubmitting}
@@ -106,7 +106,7 @@ const UserLogin = () => {
               <input 
                 type="password" 
                 placeholder="SECURE PASSKEY" 
-                className="w-full pl-16 pr-8 py-5 bg-slate-50 rounded-[2rem] border border-slate-200 focus:border-electric focus:bg-white focus:ring-8 focus:ring-electric/5 outline-none transition-all font-black italic text-sm tracking-tight"
+                className="w-full pl-16 pr-8 py-5 bg-slate-50 rounded-lg border border-slate-200 focus:border-electric focus:bg-white focus:ring-8 focus:ring-electric/5 outline-none transition-all font-black italic text-sm tracking-tight"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 disabled={isSubmitting}
@@ -117,7 +117,7 @@ const UserLogin = () => {
             <button 
               type="submit"
               disabled={isSubmitting}
-              className={`w-full py-6 bg-navy-900 text-white rounded-[2rem] font-black italic text-lg flex items-center justify-center gap-3 transition-all shadow-2xl mt-8 group disabled:opacity-50 active:scale-95 ${
+              className={`w-full py-6 bg-navy-900 text-white rounded-lg font-black italic text-lg flex items-center justify-center gap-3 transition-all shadow-2xl mt-8 group disabled:opacity-50 active:scale-95 ${
                 loginType === 'admin' ? 'hover:bg-danger shadow-danger/20' : 
                 loginType === 'soc' ? 'hover:bg-warning shadow-warning/20' : 'hover:bg-electric shadow-electric/20'
               }`}

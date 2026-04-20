@@ -19,6 +19,7 @@ import UserDashboard from './pages/user/UserDashboard';
 import SendMoney from './pages/user/SendMoney';
 import TransactionHistory from './pages/user/TransactionHistory';
 import DebitCard from './pages/user/DebitCard';
+import ChangeUpiPin from './pages/user/ChangeUpiPin';
 
 // Threat Pages
 import ThreatLayout from './pages/threat/ThreatLayout';
@@ -34,7 +35,7 @@ const AppContent = () => {
   const isLandingPage = location.pathname === '/';
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col">
+    <div className="min-h-screen bg-[#05070a] flex flex-col">
       {!isLandingPage && <Navbar />}
       <div className={`${isLandingPage ? '' : 'flex-1'}`}>
         <Routes>
@@ -58,6 +59,7 @@ const AppContent = () => {
             <Route path="send" element={<SendMoney />} />
             <Route path="history" element={<TransactionHistory />} />
             <Route path="card" element={<DebitCard />} />
+            <Route path="change-pin" element={<ChangeUpiPin />} />
           </Route>
 
           {/* Threat Intelligence Routes */}

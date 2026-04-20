@@ -52,7 +52,7 @@ const TransactionHistory = () => {
     <div className="space-y-12 animate-in slide-in-from-right-10 duration-500 pb-20">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-8">
         <div className="flex items-center gap-6">
-          <button onClick={() => navigate(-1)} className="p-4 bg-white rounded-3xl text-navy-900 shadow-sm border border-slate-200 hover:bg-slate-50 transition-all active:scale-95">
+          <button onClick={() => navigate(-1)} className="p-4 bg-white rounded-lg text-navy-900 shadow-sm border border-slate-200 hover:bg-slate-50 transition-all active:scale-95">
             <ChevronLeft size={24} />
           </button>
           <div>
@@ -65,18 +65,18 @@ const TransactionHistory = () => {
         </div>
         
         <div className="flex gap-4">
-           <button className="flex items-center gap-3 px-8 py-4 bg-white border border-slate-200 rounded-2xl text-[10px] font-black uppercase tracking-widest text-navy-900 hover:bg-slate-50 transition-all shadow-sm">
+           <button className="flex items-center gap-3 px-8 py-4 bg-white border border-slate-200 rounded-lg text-[10px] font-black uppercase tracking-widest text-navy-900 hover:bg-slate-50 transition-all shadow-sm">
               <Download size={16} className="text-electric" />
               Secure Export
            </button>
-           <button className="flex items-center gap-3 px-8 py-4 bg-navy-900 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-electric transition-all shadow-2xl shadow-navy-900/10">
+           <button className="flex items-center gap-3 px-8 py-4 bg-navy-900 text-white rounded-lg text-[10px] font-black uppercase tracking-widest hover:bg-electric transition-all shadow-2xl shadow-navy-900/10">
               <Filter size={16} />
               Refine Vector
            </button>
         </div>
       </div>
 
-      <div className="bg-white rounded-[4rem] border border-slate-200 shadow-sm overflow-hidden min-h-[600px] flex flex-col">
+      <div className="bg-white rounded-lg border border-slate-200 shadow-sm overflow-hidden min-h-[600px] flex flex-col">
         {/* Search Header */}
         <div className="p-10 border-b border-slate-100 bg-slate-50/30 flex items-center gap-8">
            <div className="relative flex-1 group">
@@ -84,7 +84,7 @@ const TransactionHistory = () => {
               <input 
                 type="text" 
                 placeholder="Locate entries by UUID, Recipient, or Metadata keys..." 
-                className="w-full pl-16 pr-8 py-5 bg-white border border-slate-200 rounded-3xl text-sm font-bold focus:ring-8 focus:ring-electric/5 outline-none transition-all shadow-sm italic placeholder:text-slate-300"
+                className="w-full pl-16 pr-8 py-5 bg-white border border-slate-200 rounded-lg text-sm font-bold focus:ring-8 focus:ring-electric/5 outline-none transition-all shadow-sm italic placeholder:text-slate-300"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
@@ -114,7 +114,7 @@ const TransactionHistory = () => {
                    <tr key={txn._id} className="group hover:bg-slate-50/60 transition-all cursor-default relative">
                       <td className="py-8 px-10">
                          <div className="flex items-center gap-6">
-                            <div className={`w-14 h-14 rounded-2xl flex items-center justify-center transition-all group-hover:scale-110 group-hover:rotate-6 ${txn.type === 'send' ? 'bg-danger/5 text-danger' : 'bg-success/5 text-success'} border border-current/10 shadow-sm shrink-0`}>
+                            <div className={`w-14 h-14 rounded-lg flex items-center justify-center transition-all group-hover:scale-110 group-hover:rotate-6 ${txn.type === 'send' ? 'bg-danger/5 text-danger' : 'bg-success/5 text-success'} border border-current/10 shadow-sm shrink-0`}>
                                {txn.type === 'send' ? <TrendingDown size={24} /> : <TrendingUp size={24} />}
                             </div>
                             <div className="space-y-1 min-w-[200px]">
@@ -161,7 +161,7 @@ const TransactionHistory = () => {
                          </div>
                       </td>
                       <div className="absolute right-6 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-all">
-                         <button className="p-3 bg-white rounded-xl border border-slate-200 text-electric shadow-xl active:scale-95">
+                         <button className="p-3 bg-white rounded-lg border border-slate-200 text-electric shadow-xl active:scale-95">
                             <ArrowRight size={20} />
                          </button>
                       </div>
@@ -183,7 +183,7 @@ const TransactionHistory = () => {
         </div>
       </div>
 
-      <div className="bg-navy-900 rounded-[3rem] p-12 text-white border border-white/5 relative overflow-hidden flex flex-col md:flex-row items-center justify-between gap-10">
+      <div className="bg-navy-900 rounded-lg p-12 text-white border border-white/5 relative overflow-hidden flex flex-col md:flex-row items-center justify-between gap-10">
          <div className="absolute -top-12 -left-12 w-64 h-64 bg-electric/10 rounded-full blur-[80px]"></div>
          <div className="relative z-10 space-y-4 max-w-2xl">
             <h5 className="text-2xl font-black italic uppercase tracking-tighter leading-none">Global Log Synchronization</h5>
@@ -192,7 +192,7 @@ const TransactionHistory = () => {
                Any dispute regarding the temporal keys above can be initiated directly with our SOC analyst team.
             </p>
          </div>
-         <button className="relative z-10 px-12 py-5 bg-white text-navy-900 rounded-[1.5rem] font-black text-xs uppercase tracking-[0.2em] italic hover:bg-electric hover:text-white transition-all shadow-2xl active:scale-95 whitespace-nowrap">
+         <button className="relative z-10 px-12 py-5 bg-white text-navy-900 rounded-lg font-black text-xs uppercase tracking-[0.2em] italic hover:bg-electric hover:text-white transition-all shadow-2xl active:scale-95 whitespace-nowrap">
             Initialize Regional Sync
          </button>
       </div>

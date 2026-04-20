@@ -45,7 +45,7 @@ const UserLayout = () => {
       <aside className="w-[280px] bg-white border-r border-slate-200 hidden lg:flex flex-col sticky top-0 h-screen">
         <div className="p-8">
            <div className="flex items-center gap-3 mb-10">
-              <div className="bg-navy-900 p-2 rounded-xl shadow-lg">
+              <div className="bg-navy-900 p-2 rounded-lg shadow-lg">
                  <ShieldCheck size={24} className="text-electric" />
               </div>
               <div>
@@ -59,7 +59,7 @@ const UserLayout = () => {
                 <NavLink
                   key={item.path}
                   to={item.path}
-                  className={({ isActive }) => `flex items-center gap-4 px-6 py-4 rounded-2xl transition-all font-black text-xs uppercase tracking-widest group ${
+                  className={({ isActive }) => `flex items-center gap-4 px-6 py-4 rounded-lg transition-all font-black text-xs uppercase tracking-widest group ${
                     isActive ? 'bg-navy-900 text-white shadow-xl shadow-navy-900/10' : 'text-slate-400 hover:bg-slate-50 hover:text-navy-900'
                   }`}
                 >
@@ -75,13 +75,13 @@ const UserLayout = () => {
         </div>
 
         <div className="mt-auto p-8 border-t border-slate-100">
-           <div className="bg-slate-50 rounded-3xl p-6 border border-slate-200 space-y-4">
+           <div className="bg-slate-50 rounded-lg p-6 border border-slate-200 space-y-4">
               <div className="flex items-center justify-between">
                 <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Protocol Status</p>
                 <div className="w-2 h-2 bg-success rounded-full animate-pulse"></div>
               </div>
               <p className="text-xs font-bold text-navy-900">All neural shields active. Last sync 2m ago.</p>
-              <button className="w-full py-3 bg-white border border-slate-200 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-slate-100 transition-colors">Deep Analysis</button>
+              <button className="w-full py-3 bg-white border border-slate-200 rounded-lg text-[10px] font-black uppercase tracking-widest hover:bg-slate-100 transition-colors">Deep Analysis</button>
            </div>
         </div>
       </aside>
@@ -95,7 +95,7 @@ const UserLayout = () => {
               <input 
                 type="text" 
                 placeholder="Search resources, logs, or transactions..." 
-                className="w-full pl-12 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-medium focus:ring-4 focus:ring-electric/5 outline-none transition-all"
+                className="w-full pl-12 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-lg text-sm font-medium focus:ring-4 focus:ring-electric/5 outline-none transition-all"
               />
            </div>
 
@@ -104,10 +104,10 @@ const UserLayout = () => {
                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Secure Entry Point</p>
                  <p className="text-sm font-black text-navy-900 truncate max-w-[150px]">{user.name}</p>
               </div>
-              <div className="w-12 h-12 bg-navy-900 rounded-2xl flex items-center justify-center font-black text-electric border-2 border-white shadow-xl">
+              <div className="w-12 h-12 bg-navy-900 rounded-lg flex items-center justify-center font-black text-electric border-2 border-white shadow-xl">
                  {user.name ? user.name.split(' ').map(n=>n[0]).join('') : ''}
               </div>
-              <button className="p-3 bg-slate-50 border border-slate-200 rounded-2xl text-slate-400 hover:text-navy-900 transition-all">
+              <button className="p-3 bg-slate-50 border border-slate-200 rounded-lg text-slate-400 hover:text-navy-900 transition-all">
                  <Settings size={20} />
               </button>
            </div>
@@ -132,7 +132,7 @@ const UserLayout = () => {
               }`}
             >
               {({ isActive }) => (
-                <div className={`p-2 rounded-xl ${isActive ? 'bg-electric/10' : ''}`}>
+                <div className={`p-2 rounded-lg ${isActive ? 'bg-electric/10' : ''}`}>
                   {item.icon}
                 </div>
               )}

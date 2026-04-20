@@ -64,6 +64,15 @@ export const AppProvider = ({ children }) => {
     }
   }
 
+  const issueUserCard = async (userId) => {
+    try {
+      await api.post(`admin/issue-card/${userId}`);
+      await fetchUsers();
+    } catch (error) {
+       throw error;
+    }
+  };
+
   const fetchProfile = async () => {
     try {
       const response = await api.get('user/profile');
@@ -75,9 +84,23 @@ export const AppProvider = ({ children }) => {
     }
   };
 
-  const fetchTransactions = async () => {
-    // This would be implemented in user or admin controller
-    // For now we use the context to store them
+  const fetchRecipients = async () => {
+    try {
+      const response = await api.get('user/recipients');
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching recipients:', error);
+      return [];
+    }
+  };
+
+  const raiseComplaint = async (complaintData) => {
+    try {
+      const response = await api.post('user/complaint', complaintData);
+      return response.data;
+    } catch (error) {
+       throw error;
+    }
   };
 
   return (
@@ -90,7 +113,10 @@ export const AppProvider = ({ children }) => {
       users,
       fetchUsers,
       registerNewUser,
+      issueUserCard,
       fetchProfile,
+      fetchRecipients,
+      raiseComplaint,
       transactions,
       setTransactions,
       threats,

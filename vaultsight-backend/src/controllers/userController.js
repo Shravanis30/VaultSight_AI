@@ -5,10 +5,11 @@ const { calculateRiskScore } = require('../utils/riskScorer');
 const { autoLock } = require('../services/lockService');
 const { createAlert } = require('../services/alertService');
 const { generateEmbedding } = require('../services/embeddingService');
+const Complaint = require('../models/Complaint');
 
 const sendMoney = async (req, res, next) => {
   try {
-    const { receiverUpiId, receiverAccountNumber, amount, note, device, location } = req.body;
+    const { receiverUpiId, receiverAccountNumber, amount, note, device, location, upiPin } = req.body;
     const sender = req.user;
 
     if (sender.isBlocked || sender.isLocked) {
@@ -17,6 +18,10 @@ const sendMoney = async (req, res, next) => {
 
     if (!amount || amount <= 0) {
       return res.status(400).json({ success: false, error: 'Invalid amount' });
+    }
+
+    if (!upiPin) {
+      return res.status(400).json({ success: false, error: 'UPI PIN is required' });
     }
 
     // Step 1: Find receiver
@@ -28,17 +33,28 @@ const sendMoney = async (req, res, next) => {
       return res.status(404).json({ success: false, error: 'Recipient not found' });
     }
 
+    if (sender._id.toString() === receiver._id.toString()) {
+        return res.status(400).json({ success: false, error: 'Cannot send money to yourself' });
+    }
+
     if (sender.balance < amount) {
       return res.status(400).json({ success: false, error: 'Insufficient balance' });
     }
 
+    // Step 1.5: Verify PIN
+    const isCorrectPin = await sender.compareUpiPin(upiPin);
+    
     // Step 2: Risk Scoring
+    // Check for previous transactions to this receiver
+    const previousTxn = await Transaction.findOne({ userId: sender._id, receiverId: receiver._id });
+    
     const riskInput = {
       amount,
       isNewDevice: device !== sender.lastLoginDevice,
       isNewLocation: location !== sender.lastLoginLocation,
       timestamp: new Date(),
-      isNewBeneficiary: true // Simulated: check past txns for real implementation
+      isNewBeneficiary: !previousTxn,
+      isWrongPin: !isCorrectPin
     };
     
     const { score, level, flags } = calculateRiskScore(riskInput, null, { hasHighThreats: sender.riskScore > 50 });
@@ -62,6 +78,20 @@ const sendMoney = async (req, res, next) => {
       riskFlags: flags,
       status: 'PENDING'
     });
+
+    // If PIN is wrong, we still record the attempt but block it
+    if (!isCorrectPin) {
+        transaction.status = 'FAILED';
+        transaction.note = 'Failed UPI PIN verification';
+        await transaction.save();
+        
+        // Possibly lock account if many wrong attempts (not requested but good practice)
+        return res.status(401).json({ 
+            success: false, 
+            error: 'Invalid UPI PIN', 
+            data: { score, level, flags }
+        });
+    }
 
     // Step 4: High Risk Handling
     if (level === 'HIGH' || level === 'CRITICAL') {
@@ -91,7 +121,7 @@ const sendMoney = async (req, res, next) => {
         threat._id
       );
 
-      if (score > process.env.AUTO_LOCK_RISK_THRESHOLD || amount > process.env.AUTO_LOCK_AMOUNT_THRESHOLD) {
+      if (score > (process.env.AUTO_LOCK_RISK_THRESHOLD || 70) || amount > (process.env.AUTO_LOCK_AMOUNT_THRESHOLD || 500000)) {
         await autoLock(sender._id, `Auto-locked due to high-risk transaction: ${score} risk points`);
         transaction.status = 'BLOCKED';
         await transaction.save();
@@ -140,4 +170,57 @@ const getTransactions = async (req, res, next) => {
   }
 };
 
-module.exports = { sendMoney, getProfile, getTransactions };
+const getRecipients = async (req, res, next) => {
+    try {
+        const users = await User.find({ role: 'user', _id: { $ne: req.user._id } })
+            .select('name upiId accountNumber balance');
+        res.status(200).json({ success: true, data: users });
+    } catch (error) {
+        next(error);
+    }
+};
+
+const raiseComplaint = async (req, res, next) => {
+    try {
+        const { subject, description, transactionId } = req.body;
+        const complaint = new Complaint({
+            complaintId: 'CMP' + Date.now(),
+            userId: req.user._id,
+            subject,
+            description,
+            transactionId
+        });
+        await complaint.save();
+        res.status(201).json({ success: true, message: 'Complaint registered successfully', data: complaint });
+    } catch (error) {
+        next(error);
+    }
+};
+
+const updatePin = async (req, res, next) => {
+    try {
+        const { oldPin, newPin } = req.body;
+        const user = await User.findById(req.user._id);
+
+        const isCorrect = await user.compareUpiPin(oldPin);
+        if (!isCorrect) {
+            return res.status(401).json({ success: false, error: 'Incorrect current PIN' });
+        }
+
+        user.upiPin = newPin;
+        await user.save();
+
+        res.status(200).json({ success: true, message: 'UPI PIN updated successfully' });
+    } catch (error) {
+        next(error);
+    }
+};
+
+module.exports = { 
+    sendMoney, 
+    getProfile, 
+    getTransactions, 
+    getRecipients, 
+    raiseComplaint,
+    updatePin
+};

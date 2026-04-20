@@ -40,12 +40,12 @@ const UPITransactions = () => {
           <h1 className="text-2xl font-bold text-slate-900 uppercase tracking-tighter italic">UPI Transaction Logs</h1>
           <p className="text-slate-500 text-sm">Monitor peer-to-peer transfers and merchant UPI payments in real-time.</p>
         </div>
-        <div className="px-4 py-2 bg-slate-100 rounded-xl border border-slate-200 text-[10px] font-black uppercase tracking-widest text-slate-500">
+        <div className="px-4 py-2 bg-slate-100 rounded-lg border border-slate-200 text-[10px] font-black uppercase tracking-widest text-slate-500">
            Index Count: {transactions.length}
         </div>
       </div>
 
-      <div className="bg-white rounded-[2.5rem] border border-slate-200 shadow-sm overflow-hidden">
+      <div className="bg-white rounded-lg border border-slate-200 shadow-sm overflow-hidden">
         <table className="w-full">
           <thead className="bg-slate-50 text-slate-500 text-[10px] uppercase font-bold tracking-widest border-b border-slate-200">
             <tr>
