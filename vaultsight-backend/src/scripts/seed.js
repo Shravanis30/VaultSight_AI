@@ -88,7 +88,7 @@ const seedData = async () => {
     for (const desc of threatDescriptions) {
       // Mock or call python service
       const embedding = await generateEmbedding(desc);
-      
+
       const threat = new Threat({
         threatId: 'TH' + Math.floor(Math.random() * 1000000),
         description: desc,

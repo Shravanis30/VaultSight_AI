@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import api from '../lib/api';
 
 const AppContext = createContext();
@@ -21,7 +21,7 @@ export const AppProvider = ({ children }) => {
     setLoading(false);
   }, [token]);
 
-  const login = async (username, password) => {
+  const login = useCallback(async (username, password) => {
     try {
       const response = await api.post('auth/login', { username, password });
       const { token, user } = response.data;
@@ -35,26 +35,26 @@ export const AppProvider = ({ children }) => {
     } catch (error) {
       return { success: false, error: error.message || 'Login failed' };
     }
-  };
+  }, []);
 
-  const logout = () => {
+  const logout = useCallback(() => {
     localStorage.removeItem('vaultsight_token');
     localStorage.removeItem('vaultsight_user');
     setToken(null);
     setUser(null);
     window.location.href = '/';
-  };
+  }, []);
 
-  const fetchUsers = async () => {
+  const fetchUsers = useCallback(async () => {
     try {
       const response = await api.get('admin/users');
       setUsers(response.data);
     } catch (error) {
       console.error('Error fetching users:', error);
     }
-  };
+  }, []);
 
-  const registerNewUser = async (userData) => {
+  const registerNewUser = useCallback(async (userData) => {
     try {
       const response = await api.post('admin/register', userData);
       await fetchUsers();
@@ -62,18 +62,18 @@ export const AppProvider = ({ children }) => {
     } catch (error) {
         throw error;
     }
-  }
+  }, [fetchUsers]);
 
-  const issueUserCard = async (userId) => {
+  const issueUserCard = useCallback(async (userId) => {
     try {
       await api.post(`admin/issue-card/${userId}`);
       await fetchUsers();
     } catch (error) {
        throw error;
     }
-  };
+  }, [fetchUsers]);
 
-  const fetchProfile = async () => {
+  const fetchProfile = useCallback(async () => {
     try {
       const response = await api.get('user/profile');
       const updatedUser = response.data;
@@ -82,9 +82,9 @@ export const AppProvider = ({ children }) => {
     } catch (error) {
       console.error('Error fetching profile:', error);
     }
-  };
+  }, []);
 
-  const fetchRecipients = async () => {
+  const fetchRecipients = useCallback(async () => {
     try {
       const response = await api.get('user/recipients');
       return response.data;
@@ -92,16 +92,16 @@ export const AppProvider = ({ children }) => {
       console.error('Error fetching recipients:', error);
       return [];
     }
-  };
+  }, []);
 
-  const raiseComplaint = async (complaintData) => {
+  const raiseComplaint = useCallback(async (complaintData) => {
     try {
       const response = await api.post('user/complaint', complaintData);
       return response.data;
     } catch (error) {
        throw error;
     }
-  };
+  }, []);
 
   return (
     <AppContext.Provider value={{ 

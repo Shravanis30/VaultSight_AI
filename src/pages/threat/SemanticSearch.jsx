@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
 import { Search, Sparkles, ShieldAlert, Cpu, Info, ArrowRight, Activity } from 'lucide-react';
+import api from '../../lib/api';
 
 const SemanticSearch = () => {
   const { threats } = useApp();
@@ -22,27 +23,48 @@ const SemanticSearch = () => {
     }
   }, []);
 
-  const handleSearch = (e, overrideQuery = null) => {
+  const handleSearch = async (e, overrideQuery = null) => {
     if (e) e.preventDefault();
     const activeQuery = overrideQuery || query;
     if (!activeQuery) return;
 
     setIsSearching(true);
-    // Simulate vector search latency
-    setTimeout(() => {
-      // Mock result sorting based on query keywords for demo
-      const mockResults = threats.filter(t => 
-        t.description.toLowerCase().includes(activeQuery.toLowerCase()) || 
-        t.riskLevel.toLowerCase() === activeQuery.toLowerCase()
-      ).map(t => ({
-        ...t,
-        similarity: (85 + Math.random() * 12).toFixed(2),
-        matches: [activeQuery]
-      }));
-      
-      setResults(mockResults);
+    
+    try {
+      if (searchMode === 'Semantic' || searchMode === 'Hybrid') {
+        // Real Vector Search
+        const response = await api.post('threats/semantic-search', { 
+          query: activeQuery,
+          limit: 10
+        });
+        
+        if (response.success) {
+          // Map backend results to frontend format
+          const formattedResults = response.data.map(item => ({
+            ...item,
+            similarity: item.similarityScore.replace('%', ''), // Page expects a number for the display
+            matches: [activeQuery] // For highlighting
+          }));
+          setResults(formattedResults);
+        }
+      } else {
+        // Fallback to simple keyword filtering if 'Exact' mode is chosen
+        const filtered = threats.filter(t => 
+          t.description.toLowerCase().includes(activeQuery.toLowerCase())
+        ).map(t => ({
+          ...t,
+          similarity: '100.00',
+          matches: [activeQuery]
+        }));
+        setResults(filtered);
+      }
+    } catch (error) {
+      console.error('Search failed:', error);
+      // Fallback on error so the UI doesn't break
+      setResults([]);
+    } finally {
       setIsSearching(false);
-    }, 1200);
+    }
   };
 
 

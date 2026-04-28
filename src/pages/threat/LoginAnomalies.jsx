@@ -9,7 +9,7 @@ const LoginAnomalies = () => {
   useEffect(() => {
     const fetchLogs = async () => {
       try {
-        const response = await api.get('/admin/logins');
+        const response = await api.get('admin/logins');
         // Filter for FAILED attempts
         const anomalies = response.data.filter(l => l.status === 'FAILED');
         setLogs(anomalies);

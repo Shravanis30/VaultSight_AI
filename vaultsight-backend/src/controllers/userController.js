@@ -79,24 +79,21 @@ const sendMoney = async (req, res, next) => {
       status: 'PENDING'
     });
 
-    // If PIN is wrong, we still record the attempt but block it
-    if (!isCorrectPin) {
-        transaction.status = 'FAILED';
-        transaction.note = 'Failed UPI PIN verification';
-        await transaction.save();
-        
-        // Possibly lock account if many wrong attempts (not requested but good practice)
-        return res.status(401).json({ 
-            success: false, 
-            error: 'Invalid UPI PIN', 
-            data: { score, level, flags }
-        });
-    }
+    // Step 4: High Risk Handling & Auto-Lock Logic
+    const riskThreshold = Number(process.env.AUTO_LOCK_RISK_THRESHOLD) || 70;
+    const amountThreshold = Number(process.env.AUTO_LOCK_AMOUNT_THRESHOLD) || 500000;
+    const shouldLock = score > riskThreshold || amount > amountThreshold;
 
-    // Step 4: High Risk Handling
-    if (level === 'HIGH' || level === 'CRITICAL') {
-      const description = `High-value transfer of ₹${amount} to ${receiver.name} from ${device} in ${location}`;
-      const embedding = await generateEmbedding(description);
+    if (level === 'HIGH' || level === 'CRITICAL' || shouldLock) {
+      const description = `${isCorrectPin ? 'High-risk transfer' : 'Suspicious failed attempt'} of ₹${amount} to ${receiver.name} from ${device} in ${location}. Reason: ${flags.join(', ')}`;
+      
+      // Generate embedding for vector search
+      let embedding = null;
+      try {
+        embedding = await generateEmbedding(description);
+      } catch (err) {
+        console.error('Embedding generation failed during auto-lock check:', err);
+      }
       
       const threat = await Threat.create({
         threatId: 'TH' + Date.now(),
@@ -104,34 +101,52 @@ const sendMoney = async (req, res, next) => {
         embedding: embedding || Array(384).fill(0),
         riskLevel: level,
         riskScore: score,
-        category: 'HIGH_VALUE_TRANSFER',
+        category: isCorrectPin ? 'HIGH_VALUE_TRANSFER' : 'SUSPICIOUS_ATTEMPT',
         affectedUserId: sender._id,
         relatedTransactionId: transaction._id,
         location,
         device,
-        actionTaken: score > 75 ? 'LOCKED' : 'ALERTED'
+        actionTaken: shouldLock ? 'LOCKED' : 'ALERTED'
       });
 
       await createAlert(
-        level === 'CRITICAL' ? 'FRAUD_DETECTED' : 'HIGH_RISK_TRANSACTION',
-        level === 'CRITICAL' ? 'CRITICAL' : 'HIGH',
+        shouldLock ? 'FRAUD_DETECTED' : 'HIGH_RISK_TRANSACTION',
+        shouldLock ? 'CRITICAL' : 'HIGH',
         description,
         sender._id,
         transaction._id,
         threat._id
       );
 
-      if (score > (process.env.AUTO_LOCK_RISK_THRESHOLD || 70) || amount > (process.env.AUTO_LOCK_AMOUNT_THRESHOLD || 500000)) {
-        await autoLock(sender._id, `Auto-locked due to high-risk transaction: ${score} risk points`);
+      if (shouldLock) {
+        await autoLock(sender._id, `Auto-locked due to high-risk patterns: ${score} risk points. Flags: ${flags.join(', ')}`);
         transaction.status = 'BLOCKED';
         await transaction.save();
-        return res.status(403).json({ success: false, blocked: true, error: 'Transaction blocked and account locked for security', data: { score, level } });
+        return res.status(403).json({ 
+          success: false, 
+          blocked: true, 
+          error: 'Transaction blocked and account locked for security', 
+          data: { score, level, flags } 
+        });
       }
 
       transaction.status = 'FLAGGED';
     }
 
-    // Step 5: Process Success/Flagged
+    // Step 5: Finalize Transaction (if not locked)
+    // If PIN is wrong, we record the attempt (already flagged as threat above if needed) and block it
+    if (!isCorrectPin) {
+        transaction.status = 'FAILED';
+        transaction.note = 'Failed UPI PIN verification';
+        await transaction.save();
+        
+        return res.status(401).json({ 
+            success: false, 
+            error: 'Invalid UPI PIN', 
+            data: { score, level, flags }
+        });
+    }
+
     const transferAmount = Number(amount);
     
     // Refresh sender and receiver to be safe

@@ -9,9 +9,9 @@ const initCronJobs = () => {
   cron.schedule('*/5 * * * *', async () => {
     try {
       winston.info('Running security scan cron job...');
-      
+
       const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
-      
+
       // 1. Scan for users with 3+ FLAGGED transactions in the last hour
       const flaggedAgg = await Transaction.aggregate([
         { $match: { status: 'FLAGGED', createdAt: { $gte: oneHourAgo } } },

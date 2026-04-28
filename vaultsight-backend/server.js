@@ -35,11 +35,11 @@ app.use(morgan('dev'));
 // Rate Limiting
 const globalLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 100
+  max: 5000 // Increased for development
 });
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 10
+  max: 1000 // Increased for development
 });
 
 app.use('/api/', globalLimiter);

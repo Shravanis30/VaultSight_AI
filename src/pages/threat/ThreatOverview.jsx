@@ -17,7 +17,7 @@ const ThreatOverview = () => {
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const response = await api.get('/admin/stats');
+        const response = await api.get('admin/stats');
         setStats(response.data);
       } catch (err) {
         console.error('Stats fetch error:', err);
@@ -96,7 +96,7 @@ const ThreatOverview = () => {
                    ))}
                 </div>
              </div>
-             <ResponsiveContainer width="100%" height="75%" minWidth={0}>
+             <ResponsiveContainer width="100%" aspect={2}>
                 <AreaChart data={[{ day: 'Mon', threats: 10 }, { day: 'Tue', threats: 15 }, { day: 'Wed', threats: stats.flaggedTransactions }]}>
                    <defs>
                       <linearGradient id="colorThreat" x1="0" y1="0" x2="0" y2="1">
@@ -119,7 +119,7 @@ const ThreatOverview = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-10">
              <div className="bg-navy-800/30 p-8 lg:p-10 rounded-xl border border-white/5 shadow-2xl h-[380px]">
                 <h3 className="text-slate-400 text-[10px] font-black uppercase tracking-[0.4em] mb-10 italic border-l-2 border-danger pl-6 leading-none">Risk Attribution</h3>
-                <ResponsiveContainer width="100%" height="80%" minWidth={0}>
+                <ResponsiveContainer width="100%" aspect={1.5}>
                    <PieChart>
                       <Pie
                         data={riskData}
