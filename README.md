@@ -141,4 +141,23 @@ To enable semantic threat search, you **MUST** create a Vector Search Index on t
 - **Vector Embeddings**: We use `all-MiniLM-L6-v2` because it generates compact 384-dimensional vectors that capture semantic meaning, unlike keyword matching.
 - **Why MongoDB Atlas?**: Having Vector Search built into the database removes the complexity of syncing data with a separate vector DB like Pinecone.
 - **Risk Multi-Factor**: The system doesn't just look at balance; it checks geography, device fingerprinting, and behavioral velocity.
+
+## System Workflow (How It Works)
+
+VaultSight AI operates as a unified platform integrating standard banking operations with an intelligent, multi-layered security engine:
+
+1. **User Activity & Transactions**: Users interact with the React frontend to perform daily banking tasks such as viewing balances and transferring funds.
+2. **Context-Aware Risk Engine**: Before processing any transfer, the Node.js backend calculates a dynamic Risk Score. This engine evaluates multi-factor criteria including transaction size, geographic location, device fingerprint, and time of day.
+3. **AI Vector Embedding**: If an anomaly or high-risk activity is detected, the transaction's metadata is formulated into a semantic description and sent to the Python Embedding Service. Utilizing the `all-MiniLM-L6-v2` transformer model, this text is converted into a dense 384-dimensional vector.
+4. **MongoDB Vector Search**: The vector is then queried against a MongoDB Atlas Vector Search index. This enables the system to find semantically similar past threats or known fraudulent patterns, moving beyond simple keyword matching.
+5. **Autonomous Threat Mitigation (Auto-Lock)**: Should the system detect a critical risk (e.g., `Risk Score > 75` or unusually large amounts), it instantly intervenes. The transaction is halted, the account is locked (`isLocked = true`), and a critical alert is flagged to prevent further loss.
+6. **Admin SOC Dashboard**: Security administrators utilize the real-time SOC (Security Operations Center) dashboard to monitor the network. They can investigate flagged threats, view semantic matches to historical data, and securely unlock false-positive accounts via manual override.
+
+## Technologies Used
+
+- **Frontend**: React (Vite), Tailwind CSS, Axios for API communication.
+- **Backend**: Node.js, Express.js, Mongoose, JSON Web Tokens (JWT) for secure authentication.
+- **AI/ML Service**: Python, FastAPI, `sentence-transformers` for embedding generation.
+- **Database**: MongoDB Atlas (Core Database & Vector Search Index).
+
 # VaultSight_AI
