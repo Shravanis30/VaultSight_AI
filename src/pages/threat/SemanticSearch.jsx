@@ -4,7 +4,7 @@ import { Search, Sparkles, ShieldAlert, Cpu, Info, ArrowRight, Activity } from '
 import api from '../../lib/api';
 
 const SemanticSearch = () => {
-  const { threats } = useApp();
+  const { threats, setThreats } = useApp();
   const [query, setQuery] = useState('');
   const [isSearching, setIsSearching] = useState(false);
   const [results, setResults] = useState([]);
@@ -49,7 +49,16 @@ const SemanticSearch = () => {
         }
       } else {
         // Fallback to simple keyword filtering if 'Exact' mode is chosen
-        const filtered = threats.filter(t => 
+        let currentThreats = threats;
+        if (!currentThreats || currentThreats.length === 0) {
+          const res = await api.get('threats');
+          if (res.success || res.data) {
+            currentThreats = res.data || [];
+            if (setThreats) setThreats(currentThreats);
+          }
+        }
+
+        const filtered = currentThreats.filter(t => 
           t.description.toLowerCase().includes(activeQuery.toLowerCase())
         ).map(t => ({
           ...t,

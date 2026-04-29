@@ -22,11 +22,30 @@ const TransactionDetailModal = ({ transaction, onClose }) => {
         reason: `SOC Protocol Execution: ${transaction.riskFlags?.join(', ') || 'Signal Anomaly Detected'}`
       });
       alert('Protocol Executed: Neural Containment Triggered');
+      window.dispatchEvent(new Event('transactionUpdated'));
       onClose();
     } catch (err) {
-
       console.error('Protocol execution failed:', err);
       alert('Protocol Execution Failed: Verify System Permissions');
+    } finally {
+      setIsExecuting(false);
+    }
+  };
+
+  const handleAuthorizeTransfer = async () => {
+    // Used to approve a flagged/blocked transaction
+    setIsExecuting(true);
+    try {
+      await api.post(`/admin/transactions/${transaction._id}/status`, {
+        status: 'COMPLETED'
+      });
+      alert('Transfer Authorized: Funds released to destination');
+      window.dispatchEvent(new Event('transactionUpdated')); // Custom event to trigger re-fetch if needed
+      onClose();
+    } catch (err) {
+      console.error('Authorization failed:', err);
+      const errorMessage = err.error || err.message || 'Could not process transfer';
+      alert(`Authorization Failed: ${errorMessage}`);
     } finally {
       setIsExecuting(false);
     }
@@ -51,7 +70,7 @@ const TransactionDetailModal = ({ transaction, onClose }) => {
             </div>
             <div>
               <h2 className="text-xl font-black text-white italic uppercase tracking-tighter">Signal Analysis</h2>
-              <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Index: {transaction.transactionId}</p>
+              <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Index: {transaction.transactionId || transaction._id}</p>
             </div>
           </div>
           <button
@@ -93,7 +112,14 @@ const TransactionDetailModal = ({ transaction, onClose }) => {
               <div className="flex-1 bg-navy-950 p-6 rounded-lg border border-navy-800 relative group">
                 <div className="absolute top-4 right-6 opacity-10 group-hover:opacity-20 transition-opacity"><User size={40} /></div>
                 <p className="text-[9px] font-bold text-slate-500 uppercase mb-2">Origin</p>
-                <p className="text-sm font-black text-white italic truncate">{transaction.senderUpiId || 'Internal Node'}</p>
+                <p className="text-sm font-black text-white italic truncate">
+                  {transaction.userId?.upiId || transaction.userId?.name || transaction.userId || 'Internal Node'}
+                </p>
+                {transaction.userId?.balance !== undefined && (
+                  <p className="text-[10px] font-medium text-emerald-400 mt-1">
+                    Available: ₹{transaction.userId.balance.toLocaleString()}
+                  </p>
+                )}
               </div>
               <div className="bg-navy-800 p-4 rounded-full border border-navy-700">
                 <ArrowRight size={20} className="text-electric" />
@@ -101,7 +127,9 @@ const TransactionDetailModal = ({ transaction, onClose }) => {
               <div className="flex-1 bg-navy-950 p-6 rounded-lg border border-navy-800 relative group">
                 <div className="absolute top-4 right-6 opacity-10 group-hover:opacity-20 transition-opacity"><User size={40} /></div>
                 <p className="text-[9px] font-bold text-slate-500 uppercase mb-2">Destination</p>
-                <p className="text-sm font-black text-white italic truncate">{transaction.receiverUpiId}</p>
+                <p className="text-sm font-black text-white italic truncate">
+                  {transaction.receiverUpiId || transaction.receiverId?.upiId || transaction.receiverId?.name || 'External'}
+                </p>
               </div>
             </div>
           </div>
@@ -163,17 +191,17 @@ const TransactionDetailModal = ({ transaction, onClose }) => {
         <div className="p-8 bg-navy-900 border-t border-navy-700 grid grid-cols-2 gap-4">
           <button
             disabled={isExecuting}
-            className="py-4 bg-navy-800 text-slate-400 hover:text-white rounded-lg font-black text-[10px] uppercase tracking-[0.2em] border border-navy-700 transition-all hover:bg-navy-700 disabled:opacity-50"
-            onClick={onClose}
+            onClick={handleExecuteProtocol}
+            className="py-4 bg-navy-800 text-danger hover:text-white rounded-lg font-black text-[10px] uppercase tracking-[0.2em] border border-danger/30 transition-all hover:bg-danger disabled:opacity-50"
           >
-            Sustain Analysis
+            {isExecuting ? <Loader2 size={16} className="animate-spin mx-auto" /> : 'Contain Threat'}
           </button>
           <button
             disabled={isExecuting}
-            onClick={handleExecuteProtocol}
+            onClick={handleAuthorizeTransfer}
             className="py-4 bg-electric text-white rounded-lg font-black text-[10px] uppercase tracking-[0.2em] shadow-xl shadow-electric/20 transition-all hover:bg-blue-600 active:scale-95 flex items-center justify-center gap-2 disabled:opacity-50"
           >
-            {isExecuting ? <Loader2 size={16} className="animate-spin" /> : 'Execute Protocol'}
+            {isExecuting ? <Loader2 size={16} className="animate-spin" /> : 'Authorize Transfer'}
           </button>
         </div>
       </div>

@@ -52,8 +52,8 @@ const DebitCard = () => {
       <div className="grid grid-cols-12 gap-12">
         {/* Left Side: Card Visualization */}
         <div className="col-span-12 lg:col-span-7 space-y-8 md:space-y-10">
-           <div className="relative h-auto aspect-[1.58/1] md:h-[400px] group perspective-1000">
-              <div className={`w-full h-full bg-gradient-to-br from-navy-900 via-navy-800 to-black rounded-lg p-6 md:p-16 text-white shadow-2xl relative overflow-hidden transition-all duration-1000 flex flex-col justify-between border-2 md:border-4 border-white/5 ${isBlocked ? 'grayscale opacity-75' : 'hover:shadow-electric/40 hover:-translate-y-2'}`}>
+           <div className="relative w-full aspect-[1.58/1] group perspective-1000">
+              <div className={`w-full h-full bg-gradient-to-br from-navy-900 via-navy-800 to-black rounded-xl p-6 md:p-10 lg:p-12 text-white shadow-2xl relative overflow-hidden transition-all duration-1000 flex flex-col justify-between border-2 md:border-4 border-white/5 ${isBlocked ? 'grayscale opacity-75' : 'hover:shadow-electric/40 hover:-translate-y-2'}`}>
                  
                  {/* Decorative Layers */}
                  <div className="absolute top-0 right-0 p-8 md:p-16 text-white/5 pointer-events-none group-hover:scale-125 transition-transform duration-1000">
@@ -77,7 +77,7 @@ const DebitCard = () => {
 
                  <div className="relative z-10 space-y-4 md:space-y-8">
                     <div className="flex items-center gap-4 md:gap-8">
-                       <p className="text-xl sm:text-2xl md:text-5xl font-black font-mono tracking-[0.1em] md:tracking-[0.2em] italic shadow-black drop-shadow-2xl whitespace-nowrap">
+                       <p className="text-xl sm:text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-black font-mono tracking-[0.1em] md:tracking-[0.15em] italic shadow-black drop-shadow-2xl whitespace-nowrap">
                           {showFull ? 
                             card.cardNumber?.match(/.{1,4}/g)?.join(' ') : 
                             '•••• •••• •••• ' + card.cardNumber?.slice(-4)}
@@ -87,18 +87,18 @@ const DebitCard = () => {
                        </button>
                     </div>
                     
-                    <div className="flex gap-6 md:gap-16">
+                    <div className="flex gap-6 md:gap-8 lg:gap-12 xl:gap-16">
                        <div className="space-y-0.5 md:space-y-1">
                           <p className="text-[8px] md:text-[10px] font-black text-slate-600 uppercase tracking-[0.2em] md:tracking-[0.3em] italic">Expiry</p>
-                          <p className="text-sm md:text-2xl font-black font-mono italic text-slate-200 whitespace-nowrap">{card.expiryMonth?.toString().padStart(2,'0')} / {card.expiryYear?.toString().slice(-2)}</p>
+                          <p className="text-sm md:text-xl lg:text-2xl font-black font-mono italic text-slate-200 whitespace-nowrap">{card.expiryMonth?.toString().padStart(2,'0')} / {card.expiryYear?.toString().slice(-2)}</p>
                        </div>
                        <div className="space-y-0.5 md:space-y-1">
                           <p className="text-[8px] md:text-[10px] font-black text-slate-600 uppercase tracking-[0.2em] md:tracking-[0.3em] italic">CVV</p>
-                          <p className="text-sm md:text-2xl font-black font-mono tracking-[0.2em] md:tracking-[0.4em] text-electric">{showFull ? card.cvv : '•••'}</p>
+                          <p className="text-sm md:text-xl lg:text-2xl font-black font-mono tracking-[0.2em] md:tracking-[0.4em] text-electric">{showFull ? card.cvv : '•••'}</p>
                        </div>
                        <div className="space-y-0.5 md:space-y-1">
                           <p className="text-[8px] md:text-[10px] font-black text-slate-600 uppercase tracking-[0.2em] md:tracking-[0.3em] italic whitespace-nowrap">Card PIN</p>
-                          <p className="text-sm md:text-2xl font-black font-mono tracking-[0.2em] md:tracking-[0.4em] text-success">{showFull ? card.cardPin || '0000' : '••••'}</p>
+                          <p className="text-sm md:text-xl lg:text-2xl font-black font-mono tracking-[0.2em] md:tracking-[0.4em] text-success">{showFull ? card.cardPin || '0000' : '••••'}</p>
                        </div>
                     </div>
                  </div>

@@ -1,3 +1,4 @@
+const winston = require('winston');
 const User = require('../models/User');
 const Transaction = require('../models/Transaction');
 const Alert = require('../models/Alert');
@@ -100,7 +101,10 @@ const unlockUser = async (req, res, next) => {
 
 const getAllTransactions = async (req, res, next) => {
   try {
-    const txns = await Transaction.find().sort({ createdAt: -1 });
+    const txns = await Transaction.find()
+      .populate('userId', 'name email balance upiId isLocked')
+      .populate('receiverId', 'name email upiId')
+      .sort({ createdAt: -1 });
     res.status(200).json({ success: true, data: txns });
   } catch (error) {
     next(error);
@@ -159,9 +163,43 @@ const updateTransactionStatus = async (req, res, next) => {
       return res.status(404).json({ success: false, error: 'Transaction not found' });
     }
 
+    winston.info(`Updating transaction ${id} status to ${status}. Current status: ${txn.status}`);
+
+    // If approving a previously blocked transaction, we need to process the funds
+    if (status === 'COMPLETED' && txn.status === 'BLOCKED') {
+      const sender = await User.findById(txn.userId);
+      const receiver = await User.findById(txn.receiverId);
+
+      if (!sender) {
+        winston.error(`Sender not found for transaction ${id}`);
+        return res.status(404).json({ success: false, error: 'Sender account not found' });
+      }
+      if (!receiver) {
+        winston.error(`Receiver not found for transaction ${id}`);
+        return res.status(404).json({ success: false, error: 'Receiver account not found' });
+      }
+
+      if (sender.balance < txn.amount) {
+         winston.warn(`Insufficient balance to authorize blocked transaction ${id}. Required: ${txn.amount}, Available: ${sender.balance}`);
+         return res.status(400).json({ success: false, error: 'Insufficient balance in sender account' });
+      }
+
+      sender.balance -= txn.amount;
+      receiver.balance += txn.amount;
+
+      await sender.save();
+      await receiver.save();
+      winston.info(`Funds transferred for authorized transaction ${id}`);
+    }
+
     txn.status = status;
     await txn.save();
 
+    // Also close any associated threats for this transaction
+    const Threat = require('../models/Threat');
+    await Threat.updateMany({ relatedTransactionId: txn._id }, { status: 'CLOSED' });
+
+    winston.info(`Transaction ${id} status successfully updated to ${status} and associated threats closed.`);
     res.status(200).json({ success: true, message: `Transaction status updated to ${status}`, data: txn });
   } catch (error) {
     next(error);

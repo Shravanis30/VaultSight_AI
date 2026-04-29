@@ -28,7 +28,8 @@ const semanticSearch = async (req, res, next) => {
 
     const formattedResults = results.map(r => ({
       ...r,
-      similarityScore: (r.similarityScore * 100).toFixed(2) + '%'
+      similarityScore: (r.similarityScore * 100).toFixed(2) + '%',
+      userName: r.user ? r.user.name : (r.affectedUserId?.name || 'Unknown Identity')
     }));
 
     res.status(200).json({ success: true, data: formattedResults });

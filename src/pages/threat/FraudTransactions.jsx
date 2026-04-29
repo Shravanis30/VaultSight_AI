@@ -8,20 +8,29 @@ const FraudTransactions = () => {
   const [loading, setLoading] = useState(true);
   const [selectedTxn, setSelectedTxn] = useState(null);
 
+  const fetchFraud = async () => {
+    try {
+      const response = await api.get('/admin/transactions');
+      // Only show pending/flagged/blocked high-risk transactions
+      const filtered = response.data.filter(t => 
+        (t.riskLevel === 'HIGH' || t.status === 'FLAGGED' || t.status === 'BLOCKED') && 
+        t.status !== 'COMPLETED' && 
+        t.status !== 'FAILED'
+      );
+      setFraudTxns(filtered);
+    } catch (err) {
+      console.error('Fraud logs fetch error:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const fetchFraud = async () => {
-      try {
-        const response = await api.get('/admin/transactions');
-        // Only show FLAGGED or HIGH risk
-        const filtered = response.data.filter(t => t.riskLevel === 'HIGH' || t.status === 'FLAGGED');
-        setFraudTxns(filtered);
-      } catch (err) {
-        console.error('Fraud logs fetch error:', err);
-      } finally {
-        setLoading(false);
-      }
-    };
     fetchFraud();
+
+    const handleUpdate = () => fetchFraud();
+    window.addEventListener('transactionUpdated', handleUpdate);
+    return () => window.removeEventListener('transactionUpdated', handleUpdate);
   }, []);
 
   if (loading) return (
