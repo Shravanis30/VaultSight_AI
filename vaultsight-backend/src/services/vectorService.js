@@ -41,7 +41,12 @@ const searchSimilarThreats = async (queryVector, limit = 5, riskLevelFilter = nu
           as: "user"
         }
       },
-      { $unwind: { path: "$user", preserveNullAndEmptyArrays: true } }
+      { 
+        $unwind: { 
+          path: "$user", 
+          preserveNullAndEmptyArrays: true 
+        } 
+      }
     ];
 
     return await Threat.aggregate(pipeline);
@@ -53,8 +58,12 @@ const searchSimilarThreats = async (queryVector, limit = 5, riskLevelFilter = nu
     
     const scoredThreats = allThreats.map(threat => {
       let score = 0;
-      if (threat.embedding && threat.embedding.length === queryVector.length) {
-         score = cosineSimilarity(queryVector, threat.embedding);
+      if (threat.embedding && Array.isArray(threat.embedding) && threat.embedding.length > 0) {
+         try {
+           score = cosineSimilarity(queryVector, threat.embedding);
+         } catch (e) {
+           score = 0;
+         }
       }
       return {
         ...threat.toObject(),

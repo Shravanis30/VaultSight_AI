@@ -68,7 +68,8 @@ const userSchema = new mongoose.Schema({
       obj.debitCard.cardNumber = `XXXX XXXX XXXX ${obj.debitCard.cardNumber.slice(-4)}`;
     }
   }
-  return obj;
-};
+    obj.status = this.isBlocked ? 'Blocked' : (this.isLocked ? 'Locked' : 'Active');
+    return obj;
+  };
 
 module.exports = mongoose.model('User', userSchema);

@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
+import { useApp } from '../../context/AppContext';
 import api from '../../lib/api';
 import { ShieldAlert, Globe, Smartphone, Clock, ShieldX, User, ShieldCheck } from 'lucide-react';
 
 const LoginAnomalies = () => {
+  const { fetchUsers } = useApp();
   const [logs, setLogs] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -28,11 +30,18 @@ const LoginAnomalies = () => {
     try {
       await api.post('admin/neutralize', { username });
       await api.delete(`admin/logins/${logId}`);
+      
+      // Refresh global state
+      if (fetchUsers) await fetchUsers();
+      
       alert(`Account @${username} neutralized and log cleared.`);
       setLogs(logs.filter(l => l._id !== logId));
     } catch (err) {
       console.error('Neutralize failed:', err);
-      alert(err.error || 'Failed to neutralize account');
+      const errorMsg = err.response?.data?.error || err.error || 'Failed to neutralize account';
+      const details = err.response?.data?.details;
+      const detailMsg = details ? `\n\nDetails: ${Object.values(details).map(d => d.message || d).join(', ')}` : '';
+      alert(`${errorMsg}${detailMsg}`);
     }
   };
 

@@ -4,7 +4,7 @@ const alertSchema = new mongoose.Schema({
   alertId: { type: String, required: true, unique: true },
   type: {
     type: String,
-    enum: ['ACCOUNT_LOCKED', 'FRAUD_DETECTED', 'SUSPICIOUS_LOGIN', 'HIGH_RISK_TRANSACTION', 'BRUTE_FORCE', 'AUTO_LOCK', 'MANUAL_LOCK'],
+    enum: ['ACCOUNT_LOCKED', 'FRAUD_DETECTED', 'SUSPICIOUS_LOGIN', 'HIGH_RISK_TRANSACTION', 'BRUTE_FORCE', 'AUTO_LOCK', 'MANUAL_LOCK', 'NEURAL_CONTAINMENT'],
     required: true
   },
 

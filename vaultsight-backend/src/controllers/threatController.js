@@ -26,11 +26,22 @@ const semanticSearch = async (req, res, next) => {
 
     const results = await searchSimilarThreats(embedding, limit || 5, riskLevelFilter);
 
-    const formattedResults = results.map(r => ({
-      ...r,
-      similarityScore: (r.similarityScore * 100).toFixed(2) + '%',
-      userName: r.user ? r.user.name : (r.affectedUserId?.name || 'Unknown Identity')
-    }));
+    const formattedResults = results.map(r => {
+      const score = typeof r.similarityScore === 'number' ? r.similarityScore : 0;
+      
+      let userName = 'Unknown Identity';
+      if (r.user && r.user.name) {
+        userName = r.user.name;
+      } else if (r.affectedUserId && r.affectedUserId.name) {
+        userName = r.affectedUserId.name;
+      }
+
+      return {
+        ...r,
+        similarityScore: (score * 100).toFixed(2) + '%',
+        userName
+      };
+    });
 
     res.status(200).json({ success: true, data: formattedResults });
   } catch (error) {

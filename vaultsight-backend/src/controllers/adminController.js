@@ -126,21 +126,17 @@ const lockUser = async (req, res, next) => {
     const { reason } = req.body;
     const adminId = req.user._id;
 
-    const user = await User.findById(userId);
-    if (!user) {
-      return res.status(404).json({ success: false, error: 'User not found' });
-    }
-
-    user.isLocked = true;
-    user.lockReason = reason || 'Manual SOC Protocol Execution';
-    user.lockedAt = new Date();
-    await user.save();
+    await User.findByIdAndUpdate(userId, {
+      isLocked: true,
+      lockReason: reason || 'Manual SOC Protocol Execution',
+      lockedAt: new Date()
+    }, { runValidators: false });
 
     const alert = new Alert({
       alertId: 'AL' + Date.now(),
       type: 'MANUAL_LOCK',
       severity: 'HIGH',
-      message: `Account manually locked: ${user.lockReason}`,
+      message: `Account manually locked: ${reason || 'Manual SOC Protocol Execution'}`,
       affectedUserId: userId,
       acknowledgedBy: adminId,
       isAcknowledged: true
@@ -163,7 +159,11 @@ const updateTransactionStatus = async (req, res, next) => {
       return res.status(404).json({ success: false, error: 'Transaction not found' });
     }
 
-    winston.info(`Updating transaction ${id} status to ${status}. Current status: ${txn.status}`);
+    if (winston && winston.info) {
+      winston.info(`Updating transaction ${id} status to ${status}. Current status: ${txn.status}`);
+    } else {
+      console.log(`Updating transaction ${id} status to ${status}. Current status: ${txn.status}`);
+    }
 
     // If approving a previously blocked transaction, we need to process the funds
     if (status === 'COMPLETED' && txn.status === 'BLOCKED') {
@@ -171,16 +171,28 @@ const updateTransactionStatus = async (req, res, next) => {
       const receiver = await User.findById(txn.receiverId);
 
       if (!sender) {
-        winston.error(`Sender not found for transaction ${id}`);
+        if (winston && winston.error) {
+          winston.error(`Sender not found for transaction ${id}`);
+        } else {
+          console.error(`Sender not found for transaction ${id}`);
+        }
         return res.status(404).json({ success: false, error: 'Sender account not found' });
       }
       if (!receiver) {
-        winston.error(`Receiver not found for transaction ${id}`);
+        if (winston && winston.error) {
+          winston.error(`Receiver not found for transaction ${id}`);
+        } else {
+          console.error(`Receiver not found for transaction ${id}`);
+        }
         return res.status(404).json({ success: false, error: 'Receiver account not found' });
       }
 
       if (sender.balance < txn.amount) {
+      if (winston && winston.warn) {
          winston.warn(`Insufficient balance to authorize blocked transaction ${id}. Required: ${txn.amount}, Available: ${sender.balance}`);
+      } else {
+         console.warn(`Insufficient balance to authorize blocked transaction ${id}. Required: ${txn.amount}, Available: ${sender.balance}`);
+      }
          return res.status(400).json({ success: false, error: 'Insufficient balance in sender account' });
       }
 
@@ -189,17 +201,24 @@ const updateTransactionStatus = async (req, res, next) => {
 
       await sender.save();
       await receiver.save();
-      winston.info(`Funds transferred for authorized transaction ${id}`);
+      if (winston && winston.info) {
+        winston.info(`Funds transferred for authorized transaction ${id}`);
+      } else {
+        console.log(`Funds transferred for authorized transaction ${id}`);
+      }
     }
 
     txn.status = status;
     await txn.save();
 
     // Also close any associated threats for this transaction
-    const Threat = require('../models/Threat');
     await Threat.updateMany({ relatedTransactionId: txn._id }, { status: 'CLOSED' });
 
-    winston.info(`Transaction ${id} status successfully updated to ${status} and associated threats closed.`);
+    if (winston && winston.info) {
+      winston.info(`Transaction ${id} status successfully updated to ${status} and associated threats closed.`);
+    } else {
+      console.log(`Transaction ${id} status successfully updated to ${status} and associated threats closed.`);
+    }
     res.status(200).json({ success: true, message: `Transaction status updated to ${status}`, data: txn });
   } catch (error) {
     next(error);
@@ -262,24 +281,38 @@ const neutralizeUsername = async (req, res, next) => {
       return res.status(404).json({ success: false, error: 'User profile not found for this username' });
     }
 
-    user.isLocked = true;
-    user.lockReason = 'SOC Neutralization: Suspected Brute Force / Unauthorized Access Attempt';
-    user.lockedAt = new Date();
-    await user.save();
+    // Use findByIdAndUpdate to bypass full document validation in case some fields are missing in DB
+    await User.findByIdAndUpdate(user._id, {
+      isLocked: true,
+      lockReason: 'SOC Neutralization: Suspected Brute Force / Unauthorized Access Attempt',
+      lockedAt: new Date()
+    }, { runValidators: false });
 
     // Create an alert
-    const alert = new Alert({
-      alertId: 'AL' + Date.now(),
-      type: 'NEURAL_CONTAINMENT',
-      severity: 'CRITICAL',
-      message: `Account neutralized after login anomalies: @${username}`,
-      affectedUserId: user._id,
-      isAcknowledged: true
-    });
-    await alert.save();
+    try {
+      const alert = new Alert({
+        alertId: `AL-NC-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+        type: 'NEURAL_CONTAINMENT',
+        severity: 'CRITICAL',
+        message: `Account neutralized after login anomalies: @${username}`,
+        affectedUserId: user._id,
+        acknowledgedBy: req.user?._id,
+        isAcknowledged: true
+      });
+      await alert.save();
+    } catch (alertError) {
+      console.error('Failed to create neutralization alert:', alertError);
+      if (alertError.name === 'ValidationError') {
+        console.error('Alert Validation Details:', alertError.errors);
+      }
+      // We still continue because the user IS locked in the DB
+    }
 
     res.status(200).json({ success: true, message: `Account @${username} has been neutralized` });
   } catch (error) {
+    if (error.name === 'ValidationError') {
+      return res.status(400).json({ success: false, error: 'Validation Error', details: error.errors });
+    }
     next(error);
   }
 };
