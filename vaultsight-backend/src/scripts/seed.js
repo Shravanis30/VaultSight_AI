@@ -31,7 +31,7 @@ const seedData = async () => {
       accountNumber: 'VS0000000000',
       upiId: 'admin@vaultsight',
       username: 'admin',
-      password: 'Admin@123',
+      password: 'admin123',
       role: 'admin',
       debitCard: {
         cardNumber: '0000000000000000',
@@ -43,24 +43,50 @@ const seedData = async () => {
     await admin.save();
     console.log('Admin user created.');
 
+    // Create SOC User
+    const soc = new User({
+      name: 'SOC Analyst',
+      mobile: '0000000001',
+      address: 'Security Operations Center',
+      accountNumber: 'VS0000000001',
+      upiId: 'soc@vaultsight',
+      username: 'soc',
+      password: 'soc123',
+      role: 'admin',
+      debitCard: {
+        cardNumber: '0000000000000001',
+        expiryMonth: 12,
+        expiryYear: 2030,
+        cvv: '000'
+      }
+    });
+    await soc.save();
+    console.log('SOC user created.');
+
     // 2. Create Users
-    const userNames = ['Rahul Sharma', 'Priya Mehta', 'Amit Patel', 'Sneha Joshi', 'Rajan Nair'];
+    const userAccounts = [
+      { name: 'Shravani', username: 'shravani3822', password: 'Shravanis30' },
+      { name: 'Yukta', username: 'yukta5181', password: 'Yukta@123' },
+      { name: 'Soham', username: 'soham9518', password: 'Soham@123' },
+      { name: 'Prathamesh', username: 'prathamesh8110', password: 'Prathamesh@123' }
+    ];
+    
     const users = [];
 
-    for (const name of userNames) {
-      const username = name.split(' ')[0].toLowerCase() + Math.floor(Math.random() * 900 + 100);
+    for (const acc of userAccounts) {
       const user = new User({
-        name,
+        name: acc.name,
         mobile: Math.floor(Math.random() * 9000000000 + 1000000000).toString(),
         address: 'India',
         accountNumber: 'VS' + Math.floor(Math.random() * 9000000000 + 1000000000),
-        upiId: name.toLowerCase().replace(' ', '') + '@vaultsight',
-        username,
-        password: 'Password@123',
+        upiId: acc.name.toLowerCase() + '@vaultsight',
+        username: acc.username,
+        password: acc.password,
+        upiPin: '123456',
         balance: Math.floor(Math.random() * 490000 + 10000),
-        isLocked: name === 'Priya Mehta', // Set Priya as locked for demo
-        lockReason: name === 'Priya Mehta' ? 'Unusual transaction history' : null,
-        lockedAt: name === 'Priya Mehta' ? new Date() : null,
+        isLocked: false,
+        lockReason: null,
+        lockedAt: null,
         debitCard: {
           cardNumber: Math.floor(Math.random() * 9000000000000000 + 1000000000000000).toString(),
           expiryMonth: 1,

@@ -53,10 +53,19 @@ cp .env.example .env
 npm run seed
 ```
 
-### 4. Run Server
+### 4. Run Backend Server
 ```bash
+cd vaultsight-backend
 npm run dev
 # Running on http://localhost:5000
+```
+
+### 5. Run React Frontend
+```bash
+# In the root project directory (VaultSight_AI)
+npm install
+npm run dev
+# Running on http://localhost:5173
 ```
 
 ---
@@ -128,6 +137,38 @@ To enable semantic threat search, you **MUST** create a Vector Search Index on t
 ### Threats (verifyAdmin)
 - `GET  /api/threats/stats`: Threat intelligence KPIs
 - `POST /api/threats/semantic-search`: Vector-similarity search for patterns
+
+---
+
+## Semantic Search Examples
+
+### 1. Account Takeover Patterns
+**Search Query:** `multiple failed login attempts followed by success`
+
+**What it finds:** Scenarios where a hacker tried many passwords before getting in.
+
+### 2. Unusual Transaction Behavior
+**Search Query:** `high value transfer to new beneficiary late at night`
+
+**What it finds:** Transactions that deviate from normal timing and recipient patterns.
+
+### 3. Velocity Attacks
+**Search Query:** `multiple transactions within one minute to different people`
+
+**What it finds:** "Smurfing" or rapid-fire transfers typical of automated fraud bots.
+
+### 4. Geographical Anomaly
+**Search Query:** `card used simultaneously in two different cities`
+
+**What it finds:** Physical "impossible travel" scenarios where a card is cloned or shared.
+
+### 5. Infrastructure Threats
+**Search Query:** `access from tor network or vpn with high value transfer`
+
+**What it finds:** Attempts to hide identity using anonymizers while moving significant funds.
+
+### 6. Specific Amount Search (New!)
+**Search Query:** `transfer of five lakhs to prathamesh`
 
 ---
 

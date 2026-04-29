@@ -17,7 +17,7 @@ const userSchema = new mongoose.Schema({
     isIssued: { type: Boolean, default: false }
   },
   username: { type: String, required: true, unique: true },
-  password: { type: String, required: true, minlength: 8 },
+  password: { type: String, required: true, minlength: 6 },
   balance: { type: Number, default: 50000 },
   role: { type: String, enum: ['user', 'admin', 'soc'], default: 'user' },
   isBlocked: { type: Boolean, default: false },
