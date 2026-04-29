@@ -243,4 +243,57 @@ const issueCard = async (req, res, next) => {
   }
 };
 
-module.exports = { getAllUsers, registerUser, getStats, unlockUser, lockUser, getAllTransactions, getLoginLogs, updateTransactionStatus, issueCard };
+const deleteLoginLog = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    await LoginLog.findByIdAndDelete(id);
+    res.status(200).json({ success: true, message: 'Log entry cleared' });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const neutralizeUsername = async (req, res, next) => {
+  try {
+    const { username } = req.body;
+    const user = await User.findOne({ username });
+    
+    if (!user) {
+      return res.status(404).json({ success: false, error: 'User profile not found for this username' });
+    }
+
+    user.isLocked = true;
+    user.lockReason = 'SOC Neutralization: Suspected Brute Force / Unauthorized Access Attempt';
+    user.lockedAt = new Date();
+    await user.save();
+
+    // Create an alert
+    const alert = new Alert({
+      alertId: 'AL' + Date.now(),
+      type: 'NEURAL_CONTAINMENT',
+      severity: 'CRITICAL',
+      message: `Account neutralized after login anomalies: @${username}`,
+      affectedUserId: user._id,
+      isAcknowledged: true
+    });
+    await alert.save();
+
+    res.status(200).json({ success: true, message: `Account @${username} has been neutralized` });
+  } catch (error) {
+    next(error);
+  }
+};
+
+module.exports = { 
+  getAllUsers, 
+  registerUser, 
+  getStats, 
+  unlockUser, 
+  lockUser, 
+  getAllTransactions, 
+  getLoginLogs, 
+  updateTransactionStatus, 
+  issueCard,
+  deleteLoginLog,
+  neutralizeUsername
+};

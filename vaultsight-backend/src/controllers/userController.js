@@ -178,8 +178,23 @@ const getProfile = async (req, res) => {
 
 const getTransactions = async (req, res, next) => {
   try {
-    const txns = await Transaction.find({ userId: req.user._id }).sort({ createdAt: -1 });
-    res.status(200).json({ success: true, data: txns });
+    const txns = await Transaction.find({ 
+      $or: [{ userId: req.user._id }, { receiverId: req.user._id }] 
+    })
+    .populate('userId', 'name upiId')
+    .populate('receiverId', 'name upiId')
+    .sort({ createdAt: -1 });
+    
+    const formattedTxns = txns.map(t => {
+      const isSender = t.userId._id.toString() === req.user._id.toString();
+      return {
+        ...t.toObject(),
+        type: isSender ? 'send' : 'receive',
+        displayIdentity: isSender ? (t.receiverId ? t.receiverId.name : t.receiverUpiId) : (t.userId ? t.userId.name : 'Unknown Sender')
+      };
+    });
+
+    res.status(200).json({ success: true, data: formattedTxns });
   } catch (error) {
     next(error);
   }

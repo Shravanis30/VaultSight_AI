@@ -42,7 +42,7 @@ const UserLayout = () => {
   ];
 
   return (
-    <div className="flex min-h-screen bg-[#F0F2F5] overflow-x-hidden relative">
+    <div className="flex h-[calc(100vh-80px)] bg-[#F0F2F5] overflow-hidden relative">
       {/* Sidebar Overlay for Mobile */}
       {isSidebarOpen && (
         <div 
@@ -53,7 +53,7 @@ const UserLayout = () => {
 
       {/* Side Navigation */}
       <aside className={`
-        fixed lg:sticky top-0 h-screen bg-white border-r border-slate-200 flex flex-col z-[70] transition-all duration-300
+        fixed lg:relative top-0 h-full bg-white border-r border-slate-200 flex flex-col z-[70] transition-all duration-300 shrink-0
         ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
         ${isDesktopSidebarOpen ? 'lg:w-[280px]' : 'lg:w-[80px]'}
         w-[280px]
@@ -120,9 +120,9 @@ const UserLayout = () => {
       </aside>
 
       {/* Main Container */}
-      <div className="flex-1 flex flex-col min-w-0 w-full overflow-x-hidden">
+      <div className="flex-1 flex flex-col min-w-0 h-full overflow-hidden">
         {/* Top Header Bar */}
-        <header className="h-16 lg:h-20 bg-white border-b border-slate-200 sticky top-0 z-30 px-4 sm:px-8 flex items-center justify-between transition-all w-full">
+        <header className="h-16 lg:h-20 bg-white border-b border-slate-200 sticky top-0 z-30 px-4 sm:px-8 flex items-center justify-between transition-all w-full shrink-0">
            <div className="flex items-center gap-4">
               <button 
                 onClick={() => {
@@ -170,7 +170,7 @@ const UserLayout = () => {
         </header>
 
         {/* Dynamic Content Area */}
-        <main className="flex-1 p-4 sm:p-8 lg:p-12">
+        <main className="flex-1 overflow-y-auto p-4 sm:p-8 lg:p-12">
           <div className="max-w-[1400px] mx-auto">
             <Outlet />
           </div>

@@ -23,12 +23,29 @@ const UserLogin = () => {
     }
   }, [user, navigate]);
 
+  const [userLocation, setUserLocation] = useState('Unknown');
+
+  useEffect(() => {
+    const detectLocation = async () => {
+      try {
+        const res = await fetch('https://ipapi.co/json/');
+        const data = await res.json();
+        if (data.city && data.country_name) {
+          setUserLocation(`${data.city}, ${data.country_code}`);
+        }
+      } catch (err) {
+        console.warn('Location detection failed');
+      }
+    };
+    detectLocation();
+  }, []);
+
   const handleLogin = async (e) => {
     e.preventDefault();
     setError('');
     setIsSubmitting(true);
     
-    const result = await login(username, password);
+    const result = await login(username, password, userLocation);
     if (!result.success) {
       setError(result.error);
       setIsSubmitting(false);

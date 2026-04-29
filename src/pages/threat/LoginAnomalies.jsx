@@ -22,6 +22,31 @@ const LoginAnomalies = () => {
     fetchLogs();
   }, []);
 
+  const handleNeutralize = async (username, logId) => {
+    if (!window.confirm(`Are you sure you want to neutralize @${username}? This will lock the account immediately.`)) return;
+    
+    try {
+      await api.post('admin/neutralize', { username });
+      await api.delete(`admin/logins/${logId}`);
+      alert(`Account @${username} neutralized and log cleared.`);
+      setLogs(logs.filter(l => l._id !== logId));
+    } catch (err) {
+      console.error('Neutralize failed:', err);
+      alert(err.error || 'Failed to neutralize account');
+    }
+  };
+
+  const handleChallenge = async (logId) => {
+    try {
+      await api.delete(`admin/logins/${logId}`);
+      alert('Anomaly acknowledged. Security challenge protocols initiated.');
+      setLogs(logs.filter(l => l._id !== logId));
+    } catch (err) {
+      console.error('Challenge failed:', err);
+      alert('Failed to process challenge');
+    }
+  };
+
   if (loading) return (
     <div className="h-full flex items-center justify-center p-20">
        <div className="w-12 h-12 border-4 border-electric border-t-transparent rounded-full animate-spin"></div>
@@ -97,8 +122,18 @@ const LoginAnomalies = () => {
                 </div>
 
                 <div className="flex gap-4 pt-4">
-                   <button className="flex-1 py-4 bg-navy-950 text-slate-400 border border-white/5 rounded-lg text-[10px] font-black uppercase tracking-widest hover:bg-white hover:text-black hover:border-white transition-all active:scale-95">Neutralize</button>
-                   <button className="flex-1 py-4 bg-warning/10 text-warning border border-warning/20 rounded-lg text-[10px] font-black uppercase tracking-widest shadow-xl shadow-warning/5 hover:bg-warning hover:text-navy-900 transition-all active:scale-95">Challenge</button>
+                   <button 
+                    onClick={() => handleNeutralize(item.username, item._id)}
+                    className="flex-1 py-4 bg-navy-950 text-slate-400 border border-white/5 rounded-lg text-[10px] font-black uppercase tracking-widest hover:bg-white hover:text-black hover:border-white transition-all active:scale-95"
+                   >
+                    Neutralize
+                   </button>
+                   <button 
+                    onClick={() => handleChallenge(item._id)}
+                    className="flex-1 py-4 bg-warning/10 text-warning border border-warning/20 rounded-lg text-[10px] font-black uppercase tracking-widest shadow-xl shadow-warning/5 hover:bg-warning hover:text-navy-900 transition-all active:scale-95"
+                   >
+                    Challenge
+                   </button>
                 </div>
              </div>
           </div>

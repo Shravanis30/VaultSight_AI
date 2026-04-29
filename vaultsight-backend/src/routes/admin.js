@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { getAllUsers, registerUser, getStats, unlockUser, lockUser, getAllTransactions, getLoginLogs, updateTransactionStatus, issueCard } = require('../controllers/adminController');
+const { getAllUsers, registerUser, getStats, unlockUser, lockUser, getAllTransactions, getLoginLogs, updateTransactionStatus, issueCard, deleteLoginLog, neutralizeUsername } = require('../controllers/adminController');
 const { body } = require('express-validator');
 const { verifyToken, verifyAdmin, verifySOC } = require('../middleware/auth');
 const { validate } = require('../middleware/validate');
@@ -13,6 +13,8 @@ router.post('/transactions/:id/status', verifySOC, updateTransactionStatus);
 router.get('/logins', verifySOC, getLoginLogs);
 router.get('/users', verifySOC, getAllUsers);
 router.post('/lock/:userId', verifySOC, lockUser);
+router.post('/neutralize', verifySOC, neutralizeUsername);
+router.delete('/logins/:id', verifySOC, deleteLoginLog);
 
 // The rest require admin specifically
 router.use(verifyAdmin);

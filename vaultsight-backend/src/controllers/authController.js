@@ -6,7 +6,7 @@ const { SYSTEM_ADMIN_ID, SYSTEM_SOC_ID } = require('../middleware/auth');
 
 const login = async (req, res, next) => {
   try {
-    const { username, password } = req.body;
+    const { username, password, location } = req.body;
 
     // Check Hardcoded Admin
     if (username === process.env.ADMIN_USERNAME && password === process.env.ADMIN_PASSWORD) {
@@ -82,6 +82,7 @@ const login = async (req, res, next) => {
     user.lastLoginAt = new Date();
     user.lastLoginIp = req.ip;
     user.lastLoginDevice = req.headers['user-agent'];
+    user.lastLoginLocation = location || 'Unknown';
     await user.save();
 
     await LoginLog.create({
@@ -89,7 +90,8 @@ const login = async (req, res, next) => {
       userId: user._id,
       status: 'SUCCESS',
       ipAddress: req.ip,
-      device: user.lastLoginDevice
+      device: user.lastLoginDevice,
+      location: location || 'Unknown'
     });
 
     const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, {

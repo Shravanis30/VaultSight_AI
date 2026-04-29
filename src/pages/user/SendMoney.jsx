@@ -33,6 +33,23 @@ const SendMoney = () => {
   
   const navigate = useNavigate();
 
+  const [userLocation, setUserLocation] = useState('Mumbai, IN');
+
+  useEffect(() => {
+    const detectLocation = async () => {
+      try {
+        const res = await fetch('https://ipapi.co/json/');
+        const data = await res.json();
+        if (data.city && data.country_name) {
+          setUserLocation(`${data.city}, ${data.country_code}`);
+        }
+      } catch (err) {
+        console.warn('Location detection failed, using fallback');
+      }
+    };
+    detectLocation();
+  }, []);
+
   useEffect(() => {
     const loadRecipients = async () => {
         const data = await fetchRecipients();
@@ -61,7 +78,7 @@ const SendMoney = () => {
         amount: parseFloat(amount),
         upiPin,
         device: "Authorized Desktop Node",
-        location: "Mumbai, IN", 
+        location: userLocation, 
         note: "Secure Transfer"
       });
 

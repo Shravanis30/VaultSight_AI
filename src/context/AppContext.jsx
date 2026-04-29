@@ -21,9 +21,9 @@ export const AppProvider = ({ children }) => {
     setLoading(false);
   }, [token]);
 
-  const login = useCallback(async (username, password) => {
+  const login = useCallback(async (username, password, location) => {
     try {
-      const response = await api.post('auth/login', { username, password });
+      const response = await api.post('auth/login', { username, password, location });
       const { token, user } = response.data;
       
       localStorage.setItem('vaultsight_token', token);

@@ -22,6 +22,8 @@ const TransactionHistory = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const navigate = useNavigate();
 
+  const [selectedTxn, setSelectedTxn] = useState(null);
+
   useEffect(() => {
     const fetchHistory = async () => {
       try {
@@ -44,12 +46,82 @@ const TransactionHistory = () => {
   );
 
   const filtered = history.filter(t => 
-    t.receiverUpiId?.toLowerCase().includes(searchTerm.toLowerCase()) || 
-    t.transactionId?.includes(searchTerm)
+    t.displayIdentity?.toLowerCase().includes(searchTerm.toLowerCase()) || 
+    t.transactionId?.includes(searchTerm) ||
+    t.receiverUpiId?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   return (
     <div className="space-y-12 animate-in slide-in-from-right-10 duration-500 pb-20">
+      {/* Transaction Detail Modal */}
+      {selectedTxn && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-navy-950/90 backdrop-blur-md" onClick={() => setSelectedTxn(null)}></div>
+          <div className="relative bg-white w-full max-w-xl rounded-xl shadow-2xl overflow-hidden animate-in zoom-in duration-300">
+             <div className="p-8 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
+                <div className="space-y-1">
+                   <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest italic">Protocol Record</p>
+                   <h3 className="text-xl font-black text-navy-900 uppercase italic tracking-tighter">Transaction Detail</h3>
+                </div>
+                <button onClick={() => setSelectedTxn(null)} className="w-10 h-10 flex items-center justify-center rounded-lg hover:bg-slate-200 transition-colors">
+                   <ChevronLeft size={24} className="text-slate-400" />
+                </button>
+             </div>
+
+             <div className="p-8 space-y-8">
+                <div className="flex items-center justify-between">
+                   <div className="flex items-center gap-4">
+                      <div className={`w-16 h-16 rounded-xl flex items-center justify-center ${selectedTxn.type === 'send' ? 'bg-danger/5 text-danger' : 'bg-success/5 text-success'} border border-current/10 shadow-sm`}>
+                         {selectedTxn.type === 'send' ? <TrendingDown size={32} /> : <TrendingUp size={32} />}
+                      </div>
+                      <div>
+                         <h4 className="text-2xl font-black text-navy-900 italic uppercase tracking-tighter">{selectedTxn.displayIdentity}</h4>
+                         <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{selectedTxn.transactionId}</p>
+                      </div>
+                   </div>
+                   <div className="text-right">
+                      <p className={`text-3xl font-black italic tracking-tighter ${selectedTxn.type === 'send' ? 'text-navy-900' : 'text-success'}`}>
+                        {selectedTxn.type === 'send' ? '-' : '+'}₹{selectedTxn.amount.toLocaleString()}
+                      </p>
+                      <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest italic">Payload Quantity</p>
+                   </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-8 py-8 border-y border-slate-100">
+                   <div className="space-y-2">
+                      <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Temporal Stamp</p>
+                      <p className="text-sm font-black text-navy-900 italic uppercase">{new Date(selectedTxn.createdAt).toLocaleString()}</p>
+                   </div>
+                   <div className="text-right space-y-2">
+                      <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Protocol Status</p>
+                      <p className={`text-sm font-black italic uppercase ${selectedTxn.status === 'COMPLETED' ? 'text-success' : 'text-warning'}`}>{selectedTxn.status}</p>
+                   </div>
+                   <div className="space-y-2">
+                      <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Authorized Node</p>
+                      <p className="text-sm font-black text-navy-900 italic uppercase">{selectedTxn.device || 'Legacy Sync'}</p>
+                   </div>
+                   <div className="text-right space-y-2">
+                      <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Geolocation Vector</p>
+                      <p className="text-sm font-black text-navy-900 italic uppercase">{selectedTxn.location || 'Unknown'}</p>
+                   </div>
+                </div>
+
+                <div className="p-6 bg-slate-50 rounded-lg border border-slate-100">
+                   <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-3 italic">Encryption Note</p>
+                   <p className="text-xs font-bold text-navy-900 italic opacity-80 leading-relaxed">
+                      {selectedTxn.note || "No additional payload descriptions provided."}
+                   </p>
+                </div>
+
+                <div className="flex items-center gap-3 p-4 bg-navy-900 rounded-lg text-white">
+                   <ShieldCheck className="text-electric" size={20} />
+                   <p className="text-[9px] font-black uppercase tracking-widest italic">Hash Verified by VaultSight Neural Network</p>
+                </div>
+             </div>
+          </div>
+        </div>
+      )}
+
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 md:gap-8">
         <div className="flex items-center gap-4 md:gap-6">
           <button onClick={() => navigate(-1)} className="p-3 md:p-4 bg-white rounded-lg text-navy-900 shadow-sm border border-slate-200 hover:bg-slate-50 transition-all active:scale-95">
@@ -111,14 +183,14 @@ const TransactionHistory = () => {
                 </thead>
                <tbody className="divide-y divide-slate-50">
                  {filtered.map((txn) => (
-                   <tr key={txn._id} className="group hover:bg-slate-50/60 transition-all cursor-default relative">
+                   <tr key={txn._id} onClick={() => setSelectedTxn(txn)} className="group hover:bg-slate-50/60 transition-all cursor-pointer relative">
                        <td className="py-6 md:py-8 px-6 md:px-10">
                           <div className="flex items-center gap-4 md:gap-6">
                              <div className={`w-10 h-10 md:w-14 md:h-14 rounded-lg flex items-center justify-center transition-all group-hover:scale-110 group-hover:rotate-6 ${txn.type === 'send' ? 'bg-danger/5 text-danger' : 'bg-success/5 text-success'} border border-current/10 shadow-sm shrink-0`}>
                                 {txn.type === 'send' ? <TrendingDown size={18} className="md:w-6 md:h-6" /> : <TrendingUp size={18} className="md:w-6 md:h-6" />}
                              </div>
                              <div className="space-y-1 min-w-[150px] md:min-w-[200px]">
-                                <h4 className="font-black text-navy-900 text-sm md:text-base tracking-tight italic truncate uppercase">{txn.receiverUpiId || 'Internal Arc Sync'}</h4>
+                                <h4 className="font-black text-navy-900 text-sm md:text-base tracking-tight italic truncate uppercase">{txn.displayIdentity || 'Internal Arc Sync'}</h4>
                                 <p className="text-[8px] md:text-[10px] font-bold text-slate-400 uppercase tracking-widest font-mono truncate max-w-[100px] md:max-w-none">{txn.transactionId}</p>
                              </div>
                           </div>
